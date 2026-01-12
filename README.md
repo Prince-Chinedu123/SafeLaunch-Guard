@@ -17,4 +17,9 @@ SafeLaunch Guard is a proactive security dashboard designed to protect retail tr
 1. Clone the repository.
 2. Install dependencies: `pip install streamlit requests python-dotenv`.
 3. Configure your `.env` file with your `WEBACY_API_KEY`.
+
 4. Run the app: `streamlit run app.py`.
+
+
+ ## 🎥 Demo Video
+ https://drive.google.com/file/d/1sIXn6O4ZkBXnZguGlROt-tzX4P-4gaRq/view?usp=sharing
