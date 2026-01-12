@@ -44,8 +44,19 @@ WEBACY_API_KEY=your_api_key_here
 Bash
 streamlit run app.py
 
-🎥 Demo
-Check out the SafeLaunch Guard in action: https://drive.google.com/file/d/1sIXn6O4ZkBXnZguGlROt-tzX4P-4gaRq/view?usp=drive_link
+## 📺 Project Demos
+
+### 🚀 Phase 2: Live Integration & Code Walkthrough (Current)
+* **Watch here:** [Link to your new "Plan B" Video]
+* **What's new:** API integration, custom Safety Score logic, and a deep dive into the `app.py` architecture.
+
+---
+
+### 🎨 Phase 1: Initial Design & UI Concept
+* **Watch here: https://drive.google.com/file/d/1sIXn6O4ZkBXnZguGlROt-tzX4P-4gaRq/view?usp=drive_link
+* **Goal:** Early-stage mockup showing the user interface and vision for SafeLaunch Guard.
+
 
 Built by Prince Chinedu for the Webacy / DD.xyz Ecosystem.
+
 
