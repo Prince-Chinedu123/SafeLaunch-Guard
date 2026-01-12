@@ -24,28 +24,28 @@ API: Webacy Risk Engine (Trading Intelligence)
 Environment: Managed via .env for secure API key handling.
 
 📦 Installation & Setup
-Clone the repository:
 
+1. Clone the repository:
 Bash
-
 git clone https://github.com/Prince-Chinedu123/SafeLaunch-Guard.git
 cd safelaunch-guard
-Install dependencies:
 
+2. Install dependencies:
 Bash
-
 pip install streamlit requests python-dotenv
-Configure Environment Variables: Create a .env file in the root directory and add your Webacy API Key:
+
+3. Configure Environment Variables: Create a .env file in the root directory and add your Webacy API Key:
 
 Code snippet
 
 WEBACY_API_KEY=your_api_key_here
-Run the Application:
 
+4. Run the Application:
 Bash
-
 streamlit run app.py
+
 🎥 Demo
-Check out the SafeLaunch Guard in action: Watch the Demo Video Here
+Check out the SafeLaunch Guard in action: https://drive.google.com/file/d/1sIXn6O4ZkBXnZguGlROt-tzX4P-4gaRq/view?usp=drive_link
 
 Built by Prince Chinedu for the Webacy / DD.xyz Ecosystem.
+
