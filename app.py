@@ -27,15 +27,20 @@ if st.button("Run Security Audit"):
         st.error("Please enter an address first!")
     else:
         with st.spinner("Accessing Webacy Risk Engine..."):
-            # Using the Trading Lite endpoint as requested
-            url = f"https://api.webacy.com/trading/lite/{target_address}?chain={chain}"
+            # Ensure chain is lowercase (crucial for API compatibility)
+            selected_chain = chain.lower() 
+            url = f"https://api.webacy.com/trading/lite/{target_address}?chain={selected_chain}"
+            
+            # --- THE FIX: Added User-Agent and accepted format ---
             headers = {
                 "accept": "application/json", 
-                "X-API-KEY": API_KEY
+                "X-API-KEY": API_KEY,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
             }
             
             try:
-                response = requests.get(url, headers=headers)
+                # Added a 15-second timeout to handle the delay you saw
+                response = requests.get(url, headers=headers, timeout=15)
                 
                 if response.status_code == 200:
                     data = response.json()
@@ -43,7 +48,6 @@ if st.button("Run Security Audit"):
                     
                     # --- Report Card Summary ---
                     st.markdown("### 📊 Token Report Card")
-                    
                     col1, col2, col3 = st.columns(3)
                     
                     # Extraction with safety defaults
@@ -58,7 +62,6 @@ if st.button("Run Security Audit"):
                     st.markdown("---")
                     
                     # --- Risk Analysis Logic ---
-                    # Calculate a simple Safety Score (100 - risk factors)
                     risk_score = (snipers * 0.5) + (top10 * 0.3) + (dev * 0.2)
                     safety_score = max(0, 100 - int(risk_score))
                     
@@ -68,21 +71,16 @@ if st.button("Run Security Audit"):
                         st.warning(f"⚠️ Overall Safety Score: {safety_score}/100 (Moderate Risk)")
                     else:
                         st.error(f"🚨 Overall Safety Score: {safety_score}/100 (HIGH RISK)")
-
-                    # Specific Flag Logic
-                    if snipers > 30:
-                        st.error("🚩 CRITICAL: High Sniper concentration detected. Potential for instant dump.")
-                    
-                    if top10 > 70:
-                        st.warning("⚠️ WARNING: Centralized Supply. Top 10 wallets control majority of tokens.")
                         
+                elif response.status_code == 403:
+                    st.error("🛡️ Webacy Firewall: Request Forbidden. This often happens if the API key isn't fully active yet or the IP is flagged. Try again in 15 minutes.")
                 elif response.status_code == 401:
-                    st.error("❌ Invalid API Key. Please verify your Webacy credentials.")
-                elif response.status_code == 404:
-                    st.error("❌ Token not found. Ensure the address and chain are correct.")
+                    st.error("❌ Invalid API Key. Please verify the key in your .env file has no spaces.")
                 else:
-                    st.error(f"Webacy API Error: {response.status_code}")
+                    st.error(f"Webacy API Error {response.status_code}: {response.text}")
             
+            except requests.exceptions.Timeout:
+                st.error("⏳ Request Timed Out. The Webacy server is taking too long to respond.")
             except Exception as e:
                 st.error(f"Connection Error: {e}")
 
