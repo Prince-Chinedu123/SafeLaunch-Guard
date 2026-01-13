@@ -47,7 +47,7 @@ streamlit run app.py
 ## 📺 Project Demos
 
 ### 🚀 Phase 2: Live Integration & Code Walkthrough (Current)
-* **Watch here:** [Link to your new "Plan B" Video]
+* **Watch here: https://drive.google.com/file/d/1_LnprrYCnmyb_xqb_cwFKiLXxZhLhMcz/view?usp=sharing
 * **What's new:** API integration, custom Safety Score logic, and a deep dive into the `app.py` architecture.
 
 ---
@@ -58,5 +58,6 @@ streamlit run app.py
 
 
 Built by Prince Chinedu for the Webacy / DD.xyz Ecosystem.
+
 
 
