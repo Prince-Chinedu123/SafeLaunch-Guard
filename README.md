@@ -1,63 +1,60 @@
-🛡️ SafeLaunch Guard
-Real-time Security Audits for the Base and Solana Ecosystems.
+# 🛡️ SafeLaunch-Guard
+![SafeLaunch-Guard Logo](https://raw.githubusercontent.com/Prince-Chinedu123/SafeLaunch-Guard/main/logo.png)
 
-SafeLaunch Guard is a proactive security dashboard designed to protect retail traders from malicious smart contracts and rug-pulls. Built during the DD.xyz Grant Program, this tool leverages the Webacy Risk Engine to provide instant, actionable safety data for new token launches.
+**Building the future of Web3 Security with the Webacy Risk Engine.**
 
-🚀 Features
-Contract Risk Analysis: Fetches real-time data from the Webacy Trading Lite API to identify vulnerabilities.
+SafeLaunch-Guard provides real-time security auditing for token launches, helping users identify rug pulls and malicious contracts before they invest.
 
-Safety Scorecard: Automatically calculates a "Safety Score" (0-100) based on sniper activity and holder concentration.
+## 🚀 Key Features
+* **Concentration Alerts:** Identifies if the Top 10 holders or Developers control a dangerous amount of the total supply.
+* **Multi-Chain Support:** Native support for Base, Solana, Ethereum, and Polygon.
+* **Webacy Integration:** Powered by the Webacy Risk Engine for enterprise-grade security data.
 
-Sniper Detection: Flags tokens where a high percentage of supply was snatched by bots at launch.
+## 🛠️ Tech Stack
+* **Language:** Python 3.9+
+* **Framework:** Streamlit (UI)
+* **API:** Webacy Risk Engine (Trading Intelligence)
+* **Security:** Managed via `.env` for secure API key handling.
 
-Concentration Alerts: Identifies if the Top 10 holders or Developers control a dangerous amount of the total supply.
+## 📦 Installation & Setup
 
-Multi-Chain Support: Native support for Base, Solana, Ethereum, and Polygon.
-
-🛠️ Tech Stack
-Language: Python 3.9+
-
-Framework: Streamlit (UI)
-
-API: Webacy Risk Engine (Trading Intelligence)
-
-Environment: Managed via .env for secure API key handling.
-
-📦 Installation & Setup
-
-1. Clone the repository:
-Bash
-git clone https://github.com/Prince-Chinedu123/SafeLaunch-Guard.git
-cd safelaunch-guard
-
-2. Install dependencies:
-Bash
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Prince-Chinedu123/SafeLaunch-Guard.git](https://github.com/Prince-Chinedu123/SafeLaunch-Guard.git)
+   cd SafeLaunch-Guard
+Install dependencies:
+...bash
 pip install streamlit requests python-dotenv
 
-3. Configure Environment Variables: Create a .env file in the root directory and add your Webacy API Key:
-
-Code snippet
-
+Configure Environment Variables: Create a .env file in the root directory:
 WEBACY_API_KEY=your_api_key_here
 
-4. Run the Application:
-Bash
+Run the Application
+....bash
 streamlit run app.py
 
-## 📺 Project Demos
+📺 Project Demos
+🚀 Phase 2: Live Integration & Code Walkthrough (Current)
+Watch the Demo Video:https://drive.google.com/file/d/1_LnprrYCnmyb_xqb_cwFKiLXxZhLhMcz/view?usp=drive_link
 
-### 🚀 Phase 2: Live Integration & Code Walkthrough (Current)
-* **Watch here: https://drive.google.com/file/d/1_LnprrYCnmyb_xqb_cwFKiLXxZhLhMcz/view?usp=sharing
-* **What's new:** API integration, custom Safety Score logic, and a deep dive into the `app.py` architecture.
+What's new: API integration, custom Safety Score logic, and a deep dive into the app.py architecture.
 
----
+🎨 Phase 1: Initial Design & UI Concept
+Watch the Concept Video:https://drive.google.com/file/d/1sIXn6O4ZkBXnZguGlROt-tzX4P-4gaRq/view?usp=drive_link
 
-### 🎨 Phase 1: Initial Design & UI Concept
-* **Watch here: https://drive.google.com/file/d/1sIXn6O4ZkBXnZguGlROt-tzX4P-4gaRq/view?usp=drive_link
-* **Goal:** Early-stage mockup showing the user interface and vision for SafeLaunch Guard.
+Goal: Early-stage mockup showing the user interface and vision for SafeLaunch Guard.
 
+📅 Project Roadmap
+Q1 2026: Initial integration with Webacy Risk Engine (Complete).
 
-Built by Prince Chinedu for the Webacy / DD.xyz Ecosystem.
+February 10, 2026: Official Public Launch & Community Beta.
+
+Q2 2026: Implementation of "Safety Badge" API for new token launches.
+
+Q3 2026: Expansion to automated Telegram & Discord security bots.
+
+Built by Chinedu Prince Ogbu for the Webacy / DD.xyz Ecosystem.
+
 
 
 
