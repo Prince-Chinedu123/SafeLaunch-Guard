@@ -3,6 +3,10 @@ import requests
 import os
 from dotenv import load_dotenv
 
+# Initialize session state for tracking usage
+if 'audit_count' not in st.session_state:
+    st.session_state.audit_count = 0
+
 # Load Environment
 load_dotenv(override=True)
 API_KEY = os.getenv("WEBACY_API_KEY", "").strip()
@@ -12,11 +16,14 @@ st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️")
 st.title("🛡️ SafeLaunch Guard")
 st.subheader("Webacy-Powered Token Security Audit")
 
-# Sidebar Status
-if API_KEY:
-    st.sidebar.success(f"Connection: Active ({API_KEY[:4]}***)")
-else:
-    st.sidebar.error("Connection: Offline (API Key Missing)")
+# --- SIDEBAR USAGE MONITOR ---
+st.sidebar.title("📊 Project Stats")
+st.sidebar.write(f"Audits Performed: **{st.session_state.audit_count}**")
+st.sidebar.progress(min(st.session_state.audit_count / 100, 1.0)) # Visual progress bar for first 100
+st.sidebar.caption(f"Grant Quota: {2000 - st.session_state.audit_count} credits remaining")
+
+if st.sidebar.button("Reset Session Counter"):
+    st.session_state.audit_count = 0
 
 # --- INPUTS ---
 target_address = st.text_input("Contract Address:", placeholder="0x...")
@@ -46,6 +53,7 @@ if st.button("Run Security Audit"):
                 if response.status_code == 200:
                     data = response.json()
                     st.success("✅ Audit Complete")
+                    st.session_state.audit_count += 1
                     
                     # 1. DATA PROCESSING
                     raw_risk = float(data.get('overallRisk', 0))
