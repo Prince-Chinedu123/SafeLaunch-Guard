@@ -47,31 +47,49 @@ if st.button("Run Security Audit"):
                     data = response.json()
                     st.success("✅ Audit Complete")
                     
-                    # Rounding the scores for a professional look
+                    # 1. DATA PROCESSING
                     raw_risk = float(data.get('overallRisk', 0))
                     rounded_risk = round(raw_risk, 2)
                     safety_score = max(0, 100 - int(raw_risk))
                     
-                    st.markdown("### 📊 Security Assessment")
+                    # 2. RISK LABELING LOGIC (The "Verdict" System)
+                    if rounded_risk <= 23:
+                        verdict = "LOW RISK"
+                        color = "green"
+                    elif rounded_risk <= 50:
+                        verdict = "MEDIUM RISK"
+                        color = "orange"
+                    else:
+                        verdict = "HIGH RISK"
+                        color = "red"
+
+                    # 3. UI DISPLAY
+                    st.markdown(f"### 📊 Security Assessment: :{color}[{verdict}]")
+                    
                     col1, col2 = st.columns(2)
                     col1.metric("Safety Score", f"{safety_score}/100")
                     col2.metric("Overall Risk Score", f"{rounded_risk}")
                     
                     st.markdown("---")
                     
-                    # Display Findings
+# FINDINGS DISPLAY (Improved for empty descriptions)
                     issues = data.get('issues', [])
                     if issues:
                         st.subheader("🚩 Risk Factors Detected")
                         for issue in issues:
-                            with st.expander(f"⚠️ {issue.get('title', 'Security Issue')}"):
-                                st.write(issue.get('description', 'No details provided.'))
+                            # Use the issue title as the primary header
+                            title = issue.get('title', 'Detected Risk Factor')
+                            description = issue.get('description', 'Technical risk detected. See Webacy dashboard for deep-dive analysis.')
+                            
+                            with st.expander(f"⚠️ {title}"):
+                                st.write(description)
                     else:
                         st.balloons()
-                        st.success("Verdict: No significant threats detected by Webacy.")
+                        st.success("SafeLaunch Verdict: No significant threats detected by Webacy.")
                 
                 else:
                     st.error(f"Error {response.status_code}: {response.text}")
+                    st.info("Check if the address and network match correctly.")
             
             except Exception as e:
                 st.error(f"Connection Failed: {e}")
