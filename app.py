@@ -3,20 +3,20 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# Initialize session state for tracking usage
-if 'audit_count' not in st.session_state:
-    st.session_state.audit_count = 0
-
 # Load Environment
 load_dotenv(override=True)
 API_KEY = os.getenv("WEBACY_API_KEY", "").strip()
+
+# Initialize session state for tracking usage
+if 'audit_count' not in st.session_state:
+    st.session_state.audit_count = 0
 
 st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️")
 
 st.title("🛡️ SafeLaunch Guard")
 st.subheader("Webacy-Powered Token Security Audit")
 
-# --- ENHANCED SIDEBAR WITH USAGE ALERT ---
+# --- SIDEBAR USAGE MONITOR ---
 st.sidebar.title("📊 Project Stats")
 
 # Calculate remaining
@@ -35,13 +35,12 @@ progress_val = min(st.session_state.audit_count / 2000, 1.0)
 st.sidebar.progress(progress_val)
 st.sidebar.caption("Webacy Grant Usage Tracker")
 
-if st.sidebar.button("Reset Session Counter"):
+# FIXED: Added a unique key to prevent the DuplicateElementId error
+if st.sidebar.button("Reset Session Counter", key="sidebar_reset_btn"):
     st.session_state.audit_count = 0
+    st.rerun() # Refresh the page to show the reset
 
-if st.sidebar.button("Reset Session Counter"):
-    st.session_state.audit_count = 0
-
-# --- INPUTS ---
+# --- MAIN APP LOGIC ---
 target_address = st.text_input("Contract Address:", placeholder="0x...")
 chain_map = {
     "Base": "base",
@@ -69,14 +68,14 @@ if st.button("Run Security Audit"):
                 if response.status_code == 200:
                     data = response.json()
                     st.success("✅ Audit Complete")
+                    
+                    # Track successful audit
                     st.session_state.audit_count += 1
                     
-                    # 1. DATA PROCESSING
                     raw_risk = float(data.get('overallRisk', 0))
                     rounded_risk = round(raw_risk, 2)
                     safety_score = max(0, 100 - int(raw_risk))
                     
-                    # 2. RISK LABELING LOGIC (The "Verdict" System)
                     if rounded_risk <= 23:
                         verdict = "LOW RISK"
                         color = "green"
@@ -87,7 +86,6 @@ if st.button("Run Security Audit"):
                         verdict = "HIGH RISK"
                         color = "red"
 
-                    # 3. UI DISPLAY
                     st.markdown(f"### 📊 Security Assessment: :{color}[{verdict}]")
                     
                     col1, col2 = st.columns(2)
@@ -96,24 +94,20 @@ if st.button("Run Security Audit"):
                     
                     st.markdown("---")
                     
-# FINDINGS DISPLAY (Improved for empty descriptions)
                     issues = data.get('issues', [])
                     if issues:
                         st.subheader("🚩 Risk Factors Detected")
                         for issue in issues:
-                            # Use the issue title as the primary header
-                            title = issue.get('title', 'Detected Risk Factor')
-                            description = issue.get('description', 'Technical risk detected. See Webacy dashboard for deep-dive analysis.')
-                            
+                            title = issue.get('title', 'Security Detail')
+                            desc = issue.get('description', 'Technical risk detected. See Webacy dashboard for deep-dive analysis.')
                             with st.expander(f"⚠️ {title}"):
-                                st.write(description)
+                                st.write(desc)
                     else:
                         st.balloons()
                         st.success("SafeLaunch Verdict: No significant threats detected by Webacy.")
                 
                 else:
                     st.error(f"Error {response.status_code}: {response.text}")
-                    st.info("Check if the address and network match correctly.")
             
             except Exception as e:
                 st.error(f"Connection Failed: {e}")
