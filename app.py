@@ -3,45 +3,48 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# Load Environment
+# 1. INITIAL SETUP & STATE
 load_dotenv(override=True)
+# This pulls the key from your Streamlit Secrets in production or .env locally
 API_KEY = os.getenv("WEBACY_API_KEY", "").strip()
 
-# Initialize session state for tracking usage
 if 'audit_count' not in st.session_state:
     st.session_state.audit_count = 0
 
-st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️")
+st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️", layout="centered")
 
-st.title("🛡️ SafeLaunch Guard")
-st.subheader("Webacy-Powered Token Security Audit")
-
-# --- SIDEBAR USAGE MONITOR ---
+# 2. SIDEBAR - USAGE & STATUS
 st.sidebar.title("📊 Project Stats")
 
-# Calculate remaining
+# Calculate remaining credits from your 2,000 grant
 remaining = 2000 - st.session_state.audit_count
 
-# Visual Feedback based on remaining credits
+# Visual status based on usage
 if remaining > 500:
     st.sidebar.success(f"Credits: {remaining} (Healthy)")
 elif remaining > 100:
     st.sidebar.warning(f"Credits: {remaining} (Low)")
 else:
-    st.sidebar.error(f"Credits: {remaining} (CRITICAL - Refill Needed)")
+    st.sidebar.error(f"Credits: {remaining} (Critical)")
 
-# Progress Bar
-progress_val = min(st.session_state.audit_count / 2000, 1.0)
-st.sidebar.progress(progress_val)
+st.sidebar.progress(min(st.session_state.audit_count / 2000, 1.0))
 st.sidebar.caption("Webacy Grant Usage Tracker")
 
-# FIXED: Added a unique key to prevent the DuplicateElementId error
+# Status indicator (Cleaner look without the key showing)
+st.sidebar.info("✅ Webacy Engine: Connected")
+
 if st.sidebar.button("Reset Session Counter", key="sidebar_reset_btn"):
     st.session_state.audit_count = 0
-    st.rerun() # Refresh the page to show the reset
+    st.rerun()
 
-# --- MAIN APP LOGIC ---
+# 3. MAIN INTERFACE
+st.title("🛡️ SafeLaunch Guard")
+st.markdown("### Webacy-Powered Token Security Audit")
+st.write("Enter a contract address below to perform a deep-scan for vulnerabilities and rug-pull risks.")
+
+# Input Section
 target_address = st.text_input("Contract Address:", placeholder="0x...")
+
 chain_map = {
     "Base": "base",
     "Ethereum": "eth",
@@ -50,11 +53,12 @@ chain_map = {
     "Arbitrum": "arb",
     "Polygon": "pol"
 }
-chain_display = st.selectbox("Network:", list(chain_map.keys()))
+chain_display = st.selectbox("Select Network:", list(chain_map.keys()))
 
-if st.button("Run Security Audit"):
+# 4. AUDIT LOGIC
+if st.button("Run Security Audit", type="primary"):
     if not target_address:
-        st.error("Please enter a contract address.")
+        st.error("Please enter a contract address first.")
     else:
         with st.spinner("Analyzing Webacy Threat Intelligence..."):
             selected_chain = chain_map[chain_display]
@@ -67,11 +71,9 @@ if st.button("Run Security Audit"):
                 
                 if response.status_code == 200:
                     data = response.json()
-                    st.success("✅ Audit Complete")
-                    
-                    # Track successful audit
                     st.session_state.audit_count += 1
                     
+                    # Risk Scoring
                     raw_risk = float(data.get('overallRisk', 0))
                     rounded_risk = round(raw_risk, 2)
                     safety_score = max(0, 100 - int(raw_risk))
@@ -86,31 +88,54 @@ if st.button("Run Security Audit"):
                         verdict = "HIGH RISK"
                         color = "red"
 
-                    st.markdown(f"### 📊 Security Assessment: :{color}[{verdict}]")
+                    st.markdown(f"## Assessment: :{color}[{verdict}]")
                     
                     col1, col2 = st.columns(2)
                     col1.metric("Safety Score", f"{safety_score}/100")
-                    col2.metric("Overall Risk Score", f"{rounded_risk}")
+                    col2.metric("Risk Level", f"{rounded_risk}/100")
                     
                     st.markdown("---")
                     
+                    # Risk Factors Display
                     issues = data.get('issues', [])
                     if issues:
                         st.subheader("🚩 Risk Factors Detected")
                         for issue in issues:
                             title = issue.get('title', 'Security Detail')
-                            desc = issue.get('description', 'Technical risk detected. See Webacy dashboard for deep-dive analysis.')
+                            desc = issue.get('description', 'Technical risk detected. Check Webacy dashboard for details.')
                             with st.expander(f"⚠️ {title}"):
                                 st.write(desc)
                     else:
                         st.balloons()
-                        st.success("SafeLaunch Verdict: No significant threats detected by Webacy.")
+                        st.success("SafeLaunch Verdict: No significant threats detected.")
+
+                    # 5. REPORT GENERATION
+                    report_text = f"SafeLaunch Guard Security Audit\n"
+                    report_text += f"Target Address: {target_address}\n"
+                    report_text += f"Network: {chain_display}\n"
+                    report_text += f"Verdict: {verdict}\n"
+                    report_text += f"Risk Score: {rounded_risk}/100\n"
+                    report_text += f"------------------------------\n\n"
+                    
+                    if issues:
+                        for issue in issues:
+                            report_text += f"- {issue.get('title')}: {issue.get('description')}\n"
+                    else:
+                        report_text += "No issues detected by Webacy Risk Engine."
+
+                    st.download_button(
+                        label="📥 Download Audit Report",
+                        data=report_text,
+                        file_name=f"Audit_{target_address[:8]}.txt",
+                        mime="text/plain",
+                    )
                 
                 else:
-                    st.error(f"Error {response.status_code}: {response.text}")
+                    st.error(f"API Error {response.status_code}: {response.text}")
             
             except Exception as e:
-                st.error(f"Connection Failed: {e}")
+                st.error(f"Connection Failed: Ensure your API Key is set in Streamlit Secrets.")
 
+# FOOTER
 st.markdown("---")
 st.caption("Powered by Webacy | Developed for the DD.xyz Grant Program")
