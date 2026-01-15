@@ -16,11 +16,27 @@ st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️")
 st.title("🛡️ SafeLaunch Guard")
 st.subheader("Webacy-Powered Token Security Audit")
 
-# --- SIDEBAR USAGE MONITOR ---
+# --- ENHANCED SIDEBAR WITH USAGE ALERT ---
 st.sidebar.title("📊 Project Stats")
-st.sidebar.write(f"Audits Performed: **{st.session_state.audit_count}**")
-st.sidebar.progress(min(st.session_state.audit_count / 100, 1.0)) # Visual progress bar for first 100
-st.sidebar.caption(f"Grant Quota: {2000 - st.session_state.audit_count} credits remaining")
+
+# Calculate remaining
+remaining = 2000 - st.session_state.audit_count
+
+# Visual Feedback based on remaining credits
+if remaining > 500:
+    st.sidebar.success(f"Credits: {remaining} (Healthy)")
+elif remaining > 100:
+    st.sidebar.warning(f"Credits: {remaining} (Low)")
+else:
+    st.sidebar.error(f"Credits: {remaining} (CRITICAL - Refill Needed)")
+
+# Progress Bar
+progress_val = min(st.session_state.audit_count / 2000, 1.0)
+st.sidebar.progress(progress_val)
+st.sidebar.caption("Webacy Grant Usage Tracker")
+
+if st.sidebar.button("Reset Session Counter"):
+    st.session_state.audit_count = 0
 
 if st.sidebar.button("Reset Session Counter"):
     st.session_state.audit_count = 0
