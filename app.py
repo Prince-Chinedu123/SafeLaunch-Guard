@@ -3,9 +3,9 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# 1. INITIAL SETUP & STATE
+# 1. INITIAL SETUP & SESSION STATE
 load_dotenv(override=True)
-# This pulls the key from your Streamlit Secrets in production or .env locally
+# This pulls from Streamlit Secrets (cloud) or .env (local)
 API_KEY = os.getenv("WEBACY_API_KEY", "").strip()
 
 if 'audit_count' not in st.session_state:
@@ -30,9 +30,10 @@ else:
 st.sidebar.progress(min(st.session_state.audit_count / 2000, 1.0))
 st.sidebar.caption("Webacy Grant Usage Tracker")
 
-# Status indicator (Cleaner look without the key showing)
+# Professional Status indicator
 st.sidebar.info("✅ Webacy Engine: Connected")
 
+# Fixed unique key to prevent DuplicateElementId error
 if st.sidebar.button("Reset Session Counter", key="sidebar_reset_btn"):
     st.session_state.audit_count = 0
     st.rerun()
@@ -101,15 +102,16 @@ if st.button("Run Security Audit", type="primary"):
                     if issues:
                         st.subheader("🚩 Risk Factors Detected")
                         for issue in issues:
-                            title = issue.get('title', 'Security Detail')
-                            desc = issue.get('description', 'Technical risk detected. Check Webacy dashboard for details.')
+                            # Using .get with defaults to avoid 'None' display
+                            title = issue.get('title') or "Security Detail"
+                            desc = issue.get('description') or "Technical risk detected. Check Webacy dashboard for details."
                             with st.expander(f"⚠️ {title}"):
                                 st.write(desc)
                     else:
                         st.balloons()
-                        st.success("SafeLaunch Verdict: No significant threats detected.")
+                        st.success("SafeLaunch Verdict: No significant threats detected by Webacy.")
 
-                    # 5. REPORT GENERATION
+                    # 5. REPORT GENERATION (Cleaned logic)
                     report_text = f"SafeLaunch Guard Security Audit\n"
                     report_text += f"Target Address: {target_address}\n"
                     report_text += f"Network: {chain_display}\n"
@@ -119,9 +121,11 @@ if st.button("Run Security Audit", type="primary"):
                     
                     if issues:
                         for issue in issues:
-                            report_text += f"- {issue.get('title')}: {issue.get('description')}\n"
+                            title = issue.get('title') or "Issue"
+                            desc = issue.get('description') or "No description provided."
+                            report_text += f"- {title}: {desc}\n"
                     else:
-                        report_text += "No issues detected by Webacy Risk Engine."
+                        report_text += "✅ No significant vulnerabilities detected by the Webacy Risk Engine."
 
                     st.download_button(
                         label="📥 Download Audit Report",
@@ -134,7 +138,7 @@ if st.button("Run Security Audit", type="primary"):
                     st.error(f"API Error {response.status_code}: {response.text}")
             
             except Exception as e:
-                st.error(f"Connection Failed: Ensure your API Key is set in Streamlit Secrets.")
+                st.error(f"Connection Failed: Ensure your API Key is correctly set in Streamlit Secrets.")
 
 # FOOTER
 st.markdown("---")
