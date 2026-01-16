@@ -6,15 +6,20 @@
 SafeLaunch-Guard provides real-time security auditing for token launches, helping users identify rug pulls and malicious contracts before they invest.
 
 ## 🚀 Key Features
-* **Concentration Alerts:** Identifies if the Top 10 holders or Developers control a dangerous amount of the total supply.
-* **Multi-Chain Support:** Native support for Base, Solana, Ethereum, and Polygon.
-* **Webacy Integration:** Powered by the Webacy Risk Engine for enterprise-grade security data.
+
+* **Risk Engine Integration:** Powered by Webacy for enterprise-grade, real-time security data across multiple chains.
+* **🐋 Whale Watch (New):** Proactive concentration alerts that identify if Top Holders or Developers control a dangerous percentage of the supply.
+* **🏆 Seal of Approval:** Automated "Safety Badge" generation for low-risk tokens to help developers prove their project's integrity.
+* **🕒 Audit History:** Persistent session tracking allowing users to manage and review their previous security scans.
+* **Multi-Chain Support:** Native support for **Base, Solana, Ethereum, Polygon, BSC, and Arbitrum**.
 
 ## 🛠️ Tech Stack
+
 * **Language:** Python 3.9+
-* **Framework:** Streamlit (UI)
+* **Framework:** Streamlit (UI & Frontend)
 * **API:** Webacy Risk Engine (Trading Intelligence)
-* **Security:** Managed via `.env` for secure API key handling.
+* **Database:** Persistent JSON-based Audit Logging
+* **Security:** Managed via **Streamlit Secrets** for enterprise-grade API key handling.
 
 ## 📦 Installation & Setup
 
@@ -64,6 +69,7 @@ Built by Chinedu Prince Ogbu for the Webacy / DD.xyz Ecosystem.
 ### 🔴 High Risk Audit (Malicious Contract on Base)
 ![Risk Scan](risk_scan.png)
 *Result: High Risk, 77.46 Risk Score. Identified vulnerabilities in contract logic.*
+
 
 
 
