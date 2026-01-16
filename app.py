@@ -5,7 +5,6 @@ import json
 from dotenv import load_dotenv
 
 # --- 1. PERSISTENCE & HISTORY LOGIC ---
-# We set the baseline to 16 here so it never drops below your actual usage.
 def get_persistent_data():
     try:
         if os.path.exists('audit_log.json'):
@@ -13,7 +12,7 @@ def get_persistent_data():
                 return json.load(f)
     except:
         pass
-    # PERMANENT FIX: Set your true current usage as the starting point
+    # PERMANENT BASELINE: Ensures your count starts at 16 even if the cloud file is wiped
     return {"count": 16, "history": []}
 
 def save_persistent_data(count, history):
@@ -29,7 +28,7 @@ API_KEY = st.secrets.get("WEBACY_API_KEY") or os.getenv("WEBACY_API_KEY", "").st
 
 saved_data = get_persistent_data()
 
-# Logic to ensure session state respects the highest number found
+# Ensure session state respects the highest number found to prevent resets
 if 'audit_count' not in st.session_state:
     st.session_state.audit_count = max(saved_data.get("count", 16), 16)
 
@@ -40,13 +39,21 @@ st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️", layout="c
 
 # --- 3. SIDEBAR (PROFESSIONAL DASHBOARD) ---
 st.sidebar.title("📊 Project Dashboard")
-GRANT_LIMIT = 2000
-remaining = GRANT_LIMIT - st.session_state.audit_count
 
-# Usage Tracker
+# SAFETY CUSHION LOGIC
+TRUE_LIMIT = 2000
+SAFE_LIMIT = 1800  # Sets a 200-credit buffer to account for "ghost" resets
+remaining = SAFE_LIMIT - st.session_state.audit_count
+
+# Usage Tracker Metric
 st.sidebar.metric("Total API Usage", f"{st.session_state.audit_count}")
-st.sidebar.progress(min(st.session_state.audit_count / GRANT_LIMIT, 1.0))
-st.sidebar.caption(f"Remaining Grant Credits: {remaining}")
+st.sidebar.progress(min(st.session_state.audit_count / SAFE_LIMIT, 1.0))
+
+# Warning system for credits
+if remaining <= 100:
+    st.sidebar.warning(f"⚠️ Low Credit Warning: {remaining} left")
+else:
+    st.sidebar.caption(f"Remaining Grant Credits: {remaining}")
 
 # Audit History Section
 st.sidebar.markdown("---")
@@ -82,7 +89,7 @@ if st.button("Run Security Audit", type="primary"):
     if not target_address:
         st.error("Please enter a contract address.")
     elif remaining <= 0:
-        st.error("⚠️ GRANT QUOTA EXCEEDED. Please contact Webacy.")
+        st.error("⚠️ SAFE LIMIT REACHED. Please contact the developer for a grant top-up.")
     else:
         with st.spinner("Analyzing Webacy Threat Intelligence..."):
             url = f"https://api.webacy.com/addresses/{target_address}"
@@ -94,7 +101,7 @@ if st.button("Run Security Audit", type="primary"):
                 if response.status_code == 200:
                     data = response.json()
                     
-                    # Update Persistence
+                    # Update Persistence & State
                     st.session_state.audit_count += 1
                     raw_risk = float(data.get('overallRisk', 0))
                     rounded_risk = round(raw_risk, 2)
