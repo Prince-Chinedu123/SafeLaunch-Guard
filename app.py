@@ -23,9 +23,9 @@ def save_persistent_data(count, history):
 
 # --- 2. INITIAL SETUP ---
 load_dotenv(override=True)
+# Priority: Streamlit Secrets -> .env -> empty string
 API_KEY = st.secrets.get("WEBACY_API_KEY") or os.getenv("WEBACY_API_KEY", "").strip()
 
-# Initialize session state from persistence
 saved_data = get_persistent_data()
 if 'audit_count' not in st.session_state:
     st.session_state.audit_count = saved_data.get("count", 11)
@@ -34,47 +34,53 @@ if 'audit_history' not in st.session_state:
 
 st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️", layout="centered")
 
-# --- 3. SIDEBAR (USAGE & HISTORY) ---
+# --- 3. SIDEBAR (PROFESSIONAL DASHBOARD) ---
 st.sidebar.title("📊 Project Dashboard")
 GRANT_LIMIT = 2000
 remaining = GRANT_LIMIT - st.session_state.audit_count
 
-# Usage Tracker
-if remaining > 500:
-    st.sidebar.success(f"Credits: {remaining} (Healthy)")
-else:
-    st.sidebar.error(f"Credits: {remaining} (Low)")
-
+# Usage Tracker - Now a Metric for professional look
+st.sidebar.metric("Total API Usage", f"{st.session_state.audit_count}")
 st.sidebar.progress(min(st.session_state.audit_count / GRANT_LIMIT, 1.0))
+st.sidebar.caption(f"Remaining Grant Credits: {remaining}")
 
-# Audit History Table
+# Audit History Section
 st.sidebar.markdown("---")
 st.sidebar.subheader("🕒 Recent Audits")
 if st.session_state.audit_history:
-    # Display last 5 scans in a clean table
+    # Show last 5 addresses only
     for item in st.session_state.audit_history[-5:]:
-        st.sidebar.caption(f"🔍 {item['addr'][:10]}... | Score: {item['score']}")
+        st.sidebar.caption(f"🔍 {item['addr'][:10]}... (Score: {item['score']})")
+    
+    # This button ONLY wipes the visual history, NOT the credit count
+    if st.sidebar.button("Clear History List", key="clear_hist_btn"):
+        st.session_state.audit_history = []
+        save_persistent_data(st.session_state.audit_count, [])
+        st.rerun()
 else:
-    st.sidebar.write("No history yet.")
+    st.sidebar.write("No scan history yet.")
 
 st.sidebar.markdown("---")
-if st.sidebar.button("Reset Everything", key="reset_all"):
-    st.session_state.audit_count = 11
-    st.session_state.audit_history = []
-    save_persistent_data(11, [])
-    st.rerun()
+st.sidebar.info("✅ Webacy Engine: Connected")
 
 # --- 4. MAIN INTERFACE ---
 st.title("🛡️ SafeLaunch Guard")
 st.markdown("### Webacy-Powered Token Security Audit")
+st.write("Professional-grade threat detection for smart contracts and token launches.")
 
 target_address = st.text_input("Contract Address:", placeholder="0x...")
-chain_map = {"Base": "base", "Ethereum": "eth", "Solana": "sol", "BSC": "bsc", "Arbitrum": "arb", "Polygon": "pol"}
+chain_map = {
+    "Base": "base", "Ethereum": "eth", "Solana": "sol", 
+    "BSC": "bsc", "Arbitrum": "arb", "Polygon": "pol"
+}
 chain_display = st.selectbox("Select Network:", list(chain_map.keys()))
 
+# --- 5. AUDIT LOGIC ---
 if st.button("Run Security Audit", type="primary"):
     if not target_address:
         st.error("Please enter a contract address.")
+    elif remaining <= 0:
+        st.error("⚠️ GRANT QUOTA EXCEEDED. Please contact Webacy.")
     else:
         with st.spinner("Analyzing Webacy Threat Intelligence..."):
             url = f"https://api.webacy.com/addresses/{target_address}"
@@ -92,12 +98,12 @@ if st.button("Run Security Audit", type="primary"):
                     rounded_risk = round(raw_risk, 2)
                     safety_score = max(0, 100 - int(raw_risk))
                     
-                    # Update History
+                    # Update History list
                     new_entry = {"addr": target_address, "score": safety_score}
                     st.session_state.audit_history.append(new_entry)
                     save_persistent_data(st.session_state.audit_count, st.session_state.audit_history)
                     
-                    # Verdicts
+                    # Score Coloring
                     if rounded_risk <= 23:
                         verdict, color = "LOW RISK", "green"
                     elif rounded_risk <= 50:
@@ -110,32 +116,63 @@ if st.button("Run Security Audit", type="primary"):
                     col1.metric("Safety Score", f"{safety_score}/100")
                     col2.metric("Risk Level", f"{rounded_risk}/100")
                     
-                    # --- UNIQUE FEATURES ---
                     st.markdown("---")
+                    
+                    # UNIQUE FEATURE: WHALE WATCH
                     st.subheader("🐋 Whale Watch: Holder Analysis")
                     if rounded_risk > 60:
-                        st.error("⚠️ HIGH CONCENTRATION: Supply risk detected.")
+                        st.error("⚠️ HIGH CONCENTRATION: Indicators suggest high control by developer/top wallets.")
                     else:
-                        st.success("✅ HEALTHY DISTRIBUTION: Supply is well-dispersed.")
+                        st.success("✅ HEALTHY DISTRIBUTION: Supply appears well-dispersed among holders.")
 
+                    # Risk Detail Expander
+                    issues = data.get('issues', [])
+                    if issues:
+                        st.subheader("🚩 Risk Factors Detected")
+                        for issue in issues:
+                            t = issue.get('title') or "Security Detail"
+                            d = issue.get('description') or "Technical risk detected."
+                            with st.expander(f"⚠️ {t}"):
+                                st.write(d)
+                    else:
+                        st.balloons()
+                        st.success("SafeLaunch Verdict: No significant threats detected.")
+
+                    # UNIQUE FEATURE: SEAL OF APPROVAL (BADGE)
                     if verdict == "LOW RISK":
+                        st.markdown("---")
                         st.subheader("🏆 SafeLaunch Seal of Approval")
                         badge_md = f"![SafeLaunch Verified](https://img.shields.io/badge/SafeLaunch-Verified_Safe-green?style=for-the-badge&logo=shield)"
                         st.markdown(badge_md)
+                        st.caption("Developer Badge Code:")
                         st.code(badge_md, language="markdown")
 
-                    # X/TWITTER SHARE
-                    tweet_text = f"Just audited {target_address[:10]} on SafeLaunch Guard. Verdict: {verdict}! 🛡️"
+                    # UNIQUE FEATURE: SOCIAL SHARE
+                    st.markdown("---")
+                    st.subheader("📣 Share Findings")
+                    status_emoji = "🛡️" if verdict == "LOW RISK" else "⚠️"
+                    tweet_text = f"Just audited {target_address[:10]} on SafeLaunch Guard. Verdict: {verdict} {status_emoji}. Stay safe out there! #Web3 #Security"
                     share_url = f"https://twitter.com/intent/tweet?text={tweet_text}"
                     st.link_button("🐦 Share on X (Twitter)", share_url)
 
-                    # REPORT DOWNLOAD
-                    report = f"SafeLaunch Audit\nTarget: {target_address}\nVerdict: {verdict}\nScore: {safety_score}/100"
-                    report += "\n\nDISCLAIMER: For informational purposes only. Powered by Webacy."
-                    st.download_button("📥 Download Report", data=report, file_name=f"Audit_{target_address[:8]}.txt")
+                    # REPORT GENERATION
+                    report_text = f"SafeLaunch Guard Security Audit\n"
+                    report_text += f"Target: {target_address}\nVerdict: {verdict}\n"
+                    report_text += f"Safety Score: {safety_score}/100\n"
+                    report_text += f"------------------------------\n"
                     
+                    if issues:
+                        for issue in issues:
+                            report_text += f"- {issue.get('title', 'Issue')}: {issue.get('description', 'No details.')}\n"
+                    else:
+                        report_text += "No issues detected.\n"
+                    
+                    report_text += "\n\nDISCLAIMER: For informational purposes only. Powered by Webacy."
+
+                    st.download_button("📥 Download Official Audit", data=report_text, file_name=f"Audit_{target_address[:8]}.txt")
+
                 else:
-                    st.error(f"API Error {response.status_code}")
+                    st.error(f"API Error {response.status_code}: {response.text}")
             except Exception as e:
                 st.error(f"Error: {e}")
 
