@@ -50,13 +50,13 @@ Watch the Concept Video:https://drive.google.com/file/d/1sIXn6O4ZkBXnZguGlROt-tz
 Goal: Early-stage mockup showing the user interface and vision for SafeLaunch Guard.
 
 📅 Project Roadmap
-Q1 2026: Initial integration with Webacy Risk Engine (Complete).
+Q1 2026: Initial integration with Webacy Risk Engine & Persistence Layer (Complete).
 
 February 10, 2026: Official Public Launch & Community Beta.
 
-Q2 2026: Implementation of "Safety Badge" API for new token launches.
+Q2 2026: Expansion of "Safety Badge" API for automated project verification.
 
-Q3 2026: Expansion to automated Telegram & Discord security bots.
+Q3 2026: Deployment of automated Telegram & Discord security alert bots.
 
 Built by Chinedu Prince Ogbu for the Webacy / DD.xyz Ecosystem.
 
@@ -69,6 +69,7 @@ Built by Chinedu Prince Ogbu for the Webacy / DD.xyz Ecosystem.
 ### 🔴 High Risk Audit (Malicious Contract on Base)
 ![Risk Scan](risk_scan.png)
 *Result: High Risk, 77.46 Risk Score. Identified vulnerabilities in contract logic.*
+
 
 
 
