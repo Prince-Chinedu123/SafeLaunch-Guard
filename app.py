@@ -5,6 +5,7 @@ import json
 from dotenv import load_dotenv
 
 # --- 1. PERSISTENCE & HISTORY LOGIC ---
+# We set the baseline to 16 here so it never drops below your actual usage.
 def get_persistent_data():
     try:
         if os.path.exists('audit_log.json'):
@@ -12,7 +13,8 @@ def get_persistent_data():
                 return json.load(f)
     except:
         pass
-    return {"count": 11, "history": []}
+    # PERMANENT FIX: Set your true current usage as the starting point
+    return {"count": 16, "history": []}
 
 def save_persistent_data(count, history):
     try:
@@ -23,12 +25,14 @@ def save_persistent_data(count, history):
 
 # --- 2. INITIAL SETUP ---
 load_dotenv(override=True)
-# Priority: Streamlit Secrets -> .env -> empty string
 API_KEY = st.secrets.get("WEBACY_API_KEY") or os.getenv("WEBACY_API_KEY", "").strip()
 
 saved_data = get_persistent_data()
+
+# Logic to ensure session state respects the highest number found
 if 'audit_count' not in st.session_state:
-    st.session_state.audit_count = saved_data.get("count", 11)
+    st.session_state.audit_count = max(saved_data.get("count", 16), 16)
+
 if 'audit_history' not in st.session_state:
     st.session_state.audit_history = saved_data.get("history", [])
 
@@ -39,7 +43,7 @@ st.sidebar.title("📊 Project Dashboard")
 GRANT_LIMIT = 2000
 remaining = GRANT_LIMIT - st.session_state.audit_count
 
-# Usage Tracker - Now a Metric for professional look
+# Usage Tracker
 st.sidebar.metric("Total API Usage", f"{st.session_state.audit_count}")
 st.sidebar.progress(min(st.session_state.audit_count / GRANT_LIMIT, 1.0))
 st.sidebar.caption(f"Remaining Grant Credits: {remaining}")
@@ -48,11 +52,9 @@ st.sidebar.caption(f"Remaining Grant Credits: {remaining}")
 st.sidebar.markdown("---")
 st.sidebar.subheader("🕒 Recent Audits")
 if st.session_state.audit_history:
-    # Show last 5 addresses only
     for item in st.session_state.audit_history[-5:]:
         st.sidebar.caption(f"🔍 {item['addr'][:10]}... (Score: {item['score']})")
     
-    # This button ONLY wipes the visual history, NOT the credit count
     if st.sidebar.button("Clear History List", key="clear_hist_btn"):
         st.session_state.audit_history = []
         save_persistent_data(st.session_state.audit_count, [])
