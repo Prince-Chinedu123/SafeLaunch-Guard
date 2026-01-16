@@ -55,6 +55,16 @@ Q3 2026: Expansion to automated Telegram & Discord security bots.
 
 Built by Chinedu Prince Ogbu for the Webacy / DD.xyz Ecosystem.
 
+## 📸 App Gallery & Demos
+
+### 🟢 Safe Asset Audit (USDC on Ethereum)
+![Safe Scan](safe_scan.png)
+*Result: Low Risk, 90/100 Safety Score.*
+
+### 🔴 High Risk Audit (Malicious Contract on Base)
+![Risk Scan](risk_scan.png)
+*Result: High Risk, 77.46 Risk Score. Identified vulnerabilities in contract logic.*
+
 
 
 
