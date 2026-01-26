@@ -5,7 +5,6 @@ import json
 from dotenv import load_dotenv
 
 # --- 1. PERSISTENCE & HISTORY LOGIC ---
-# Updated to ensure we NEVER drop below your current actual usage
 def get_persistent_data():
     try:
         if os.path.exists('audit_log.json'):
@@ -13,7 +12,6 @@ def get_persistent_data():
                 return json.load(f)
     except:
         pass
-    # Your real-world baseline as of today
     return {"count": 22, "history": []} 
 
 def save_persistent_data(count, history):
@@ -40,9 +38,8 @@ st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️", layout="c
 # --- 3. SIDEBAR (PROFESSIONAL DASHBOARD) ---
 st.sidebar.title("📊 Project Dashboard")
 
-# HARD SAFETY LIMIT (Grant Protection)
-HARD_LIMIT = 1750 # Absolute stop to prevent fees
-SAFE_LIMIT = 1700 # Warning line
+HARD_LIMIT = 1750 
+SAFE_LIMIT = 1700 
 remaining = HARD_LIMIT - st.session_state.audit_count
 
 st.sidebar.metric("Total API Usage", f"{st.session_state.audit_count}")
@@ -81,9 +78,9 @@ if st.button("Run Security Audit", type="primary"):
     if not target_address:
         st.error("Please enter a contract address.")
     elif remaining <= 0:
-        st.error("⚠️ BETA LIMIT REACHED. We are saving remaining credits for the Feb 10 Grand Launch!")
+        st.error("⚠️ BETA LIMIT REACHED. Saving remaining credits for Feb 10 Launch!")
     else:
-        with st.spinner("Analyzing Webacy Threat Intelligence..."):
+        with st.spinner("Analyzing Contract & Creator Pedigree..."):
             url = f"https://api.webacy.com/addresses/{target_address}"
             headers = {"x-api-key": API_KEY, "accept": "application/json"}
             
@@ -98,11 +95,11 @@ if st.button("Run Security Audit", type="primary"):
                     rounded_risk = round(raw_risk, 2)
                     safety_score = max(0, 100 - int(raw_risk))
                     
+                    # History & Persistence
                     new_entry = {"addr": target_address, "score": safety_score}
                     st.session_state.audit_history.append(new_entry)
                     save_persistent_data(st.session_state.audit_count, st.session_state.audit_history)
                     
-                    # UI IMPROVEMENT: Report Header
                     if rounded_risk <= 23:
                         verdict, color, icon = "LOW RISK", "green", "✅"
                     elif rounded_risk <= 50:
@@ -110,17 +107,31 @@ if st.button("Run Security Audit", type="primary"):
                     else:
                         verdict, color, icon = "HIGH RISK", "red", "🚨"
 
+                    # FEATURE 1: VISUAL RISK METER
                     st.success(f"Audit Complete for {target_address[:10]}...")
-                    
-                    # INNOVATION: Trust Box
                     with st.container():
-                        c1, c2, c3 = st.columns(3)
-                        c1.metric("Safety Score", f"{safety_score}/100")
-                        c2.metric("Risk Level", f"{rounded_risk}%")
-                        c3.write(f"**Verdict**\n### :{color}[{verdict}]")
+                        st.markdown(f"### Security Standing: :{color}[{verdict}]")
+                        meter_col, text_col = st.columns([3, 1])
+                        meter_col.progress(safety_score / 100)
+                        text_col.markdown(f"**{safety_score}/100 Grade**")
+                        
+                        c1, c2 = st.columns(2)
+                        c1.metric("Threat Level", f"{rounded_risk}%", delta=f"{verdict}", delta_color="inverse")
+                        c2.metric("Network", chain_display)
                     
                     st.markdown("---")
-                    
+
+                    # FEATURE 2: CREATOR PEDIGREE (DEV-SCORE)
+                    # We look at the contract's creator risk if provided in the API response
+                    st.subheader("👨‍💻 Creator Pedigree: Wallet Reputation")
+                    creator_risk = data.get('creatorRisk', raw_risk) # Fallback to raw if not split
+                    if creator_risk > 70:
+                        st.error(f"🚨 HIGH RISK CREATOR: This wallet has a history of suspicious interactions (Risk: {creator_risk}%)")
+                    elif creator_risk > 30:
+                        st.warning(f"⚠️ UNKNOWN CREATOR: New or low-activity wallet. Exercise caution.")
+                    else:
+                        st.success(f"💎 ESTABLISHED CREATOR: This wallet shows a clean historical profile.")
+
                     # WHALE WATCH
                     st.subheader("🐋 Whale Watch: Holder Analysis")
                     if rounded_risk > 60:
@@ -145,10 +156,9 @@ if st.button("Run Security Audit", type="primary"):
                         st.subheader("🏆 SafeLaunch Seal of Approval")
                         badge_md = f"![SafeLaunch Verified](https://img.shields.io/badge/SafeLaunch-Verified_Safe-green?style=for-the-badge&logo=shield)"
                         st.markdown(badge_md)
-                        st.caption("Developer Badge Code (Markdown):")
                         st.code(badge_md)
 
-                    # SOCIAL SHARE (Twitter/X)
+                    # SOCIAL SHARE
                     st.markdown("---")
                     tweet_text = f"Audit complete for {target_address[:10]} on @SafeLaunchGuard. Verdict: {verdict} {icon}. Protected by @mywebacy tech. #Web3 #Security"
                     share_url = f"https://twitter.com/intent/tweet?text={tweet_text}"
