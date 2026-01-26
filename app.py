@@ -12,6 +12,7 @@ def get_persistent_data():
                 return json.load(f)
     except:
         pass
+    # Your real-world baseline ensures count doesn't reset to 0
     return {"count": 22, "history": []} 
 
 def save_persistent_data(count, history):
@@ -38,6 +39,7 @@ st.set_page_config(page_title="SafeLaunch Guard", page_icon="🛡️", layout="c
 # --- 3. SIDEBAR (PROFESSIONAL DASHBOARD) ---
 st.sidebar.title("📊 Project Dashboard")
 
+# HARD SAFETY LIMIT (Grant Protection)
 HARD_LIMIT = 1750 
 SAFE_LIMIT = 1700 
 remaining = HARD_LIMIT - st.session_state.audit_count
@@ -95,11 +97,12 @@ if st.button("Run Security Audit", type="primary"):
                     rounded_risk = round(raw_risk, 2)
                     safety_score = max(0, 100 - int(raw_risk))
                     
-                    # History & Persistence
+                    # Update History list
                     new_entry = {"addr": target_address, "score": safety_score}
                     st.session_state.audit_history.append(new_entry)
                     save_persistent_data(st.session_state.audit_count, st.session_state.audit_history)
                     
+                    # Verdict Logic
                     if rounded_risk <= 23:
                         verdict, color, icon = "LOW RISK", "green", "✅"
                     elif rounded_risk <= 50:
@@ -122,9 +125,8 @@ if st.button("Run Security Audit", type="primary"):
                     st.markdown("---")
 
                     # FEATURE 2: CREATOR PEDIGREE (DEV-SCORE)
-                    # We look at the contract's creator risk if provided in the API response
                     st.subheader("👨‍💻 Creator Pedigree: Wallet Reputation")
-                    creator_risk = data.get('creatorRisk', raw_risk) # Fallback to raw if not split
+                    creator_risk = data.get('creatorRisk', raw_risk) 
                     if creator_risk > 70:
                         st.error(f"🚨 HIGH RISK CREATOR: This wallet has a history of suspicious interactions (Risk: {creator_risk}%)")
                     elif creator_risk > 30:
@@ -139,13 +141,16 @@ if st.button("Run Security Audit", type="primary"):
                     else:
                         st.success("💎 HEALTHY DISTRIBUTION: No major wallet concentration issues.")
 
-                    # Risk Detail Expander
+                    # FEATURE 3: IMPROVED RISK DETAIL EXPANDER
                     issues = data.get('issues', [])
                     if issues:
                         st.subheader("🚩 Security Findings")
                         for issue in issues:
-                            with st.expander(f"⚠️ {issue.get('title', 'Risk Factor')}"):
-                                st.write(issue.get('description', 'Details not provided.'))
+                            title = issue.get('title', 'Risk Factor')
+                            # Fix for "No Details" - provide professional fallback
+                            description = issue.get('description') or "Technical risk identified by the Webacy threat engine. Manual review of contract functions recommended."
+                            with st.expander(f"⚠️ {title}"):
+                                st.write(description)
                     else:
                         st.balloons()
                         st.success("SafeLaunch Verdict: No significant threats detected.")
