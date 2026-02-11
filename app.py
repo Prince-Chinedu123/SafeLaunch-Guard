@@ -97,7 +97,7 @@ if st.button("Run Security Audit", type="primary"):
                     rounded_risk = round(raw_risk, 2)
                     safety_score = max(0, 100 - int(raw_risk))
                     
-                    # RUG PROBABILITY MATH (As requested, unchanged)
+                    # RUG PROBABILITY MATH (Original logic preserved)
                     issues_count = len(data.get('issues', []))
                     creator_risk = data.get('creatorRisk', raw_risk)
                     rug_prob = min(100, (rounded_risk * 0.6) + (creator_risk * 0.2) + (issues_count * 5))
@@ -115,24 +115,24 @@ if st.button("Run Security Audit", type="primary"):
 
                     st.success(f"Audit Complete for {target_address[:10]}...")
                     
-                    # --- BEAUTIFUL LAYOUT START ---
+                    # --- BEAUTIFUL LAYOUT (Restored & Enhanced) ---
                     
-                    # 1. TOP LEVEL VERDICT
-                    st.markdown(f"## {icon} {verdict}")
-                    st.write(f"**Rug Probability Score: {round(rug_prob, 1)}%**")
+                    # TWEAK: Colored Progress Label based on risk
+                    prob_color = "red" if rug_prob > 70 else "orange" if rug_prob > 30 else "green"
+                    st.markdown(f"## Rug Probability: :{prob_color}[{round(rug_prob, 1)}%]")
                     st.progress(rug_prob / 100)
                     
-                    # 2. SCORECARD METRICS
-                    col_m1, col_m2, col_m3 = st.columns(3)
-                    col_m1.metric("Safety Grade", f"{safety_score}/100")
-                    col_m2.metric("Threat Level", f"{rounded_risk}%")
-                    col_m3.metric("Network", chain_display)
+                    # TWEAK: Smart Scorecard with verdict context
+                    st.markdown(f"### Security Standing: :{color}[{icon} {verdict}]")
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Safety Grade", f"{safety_score}/100")
+                    c2.metric("Threat Level", f"{rounded_risk}%", delta=verdict, delta_color="inverse")
+                    c3.metric("Network", chain_display)
 
                     st.markdown("---")
 
-                    # 3. TECHNICAL HEALTH CARDS (Side-by-Side)
+                    # SIDE-BY-SIDE HEALTH CARDS
                     row1_col1, row1_col2 = st.columns(2)
-                    
                     has_liq_issue = any("liquidity" in str(iss).lower() for iss in data.get('issues', []))
                     
                     with row1_col1:
@@ -153,17 +153,17 @@ if st.button("Run Security Audit", type="primary"):
                                 st.success("💎 ORGANIC")
                             st.caption("Distribution patterns.")
 
-                    # 4. CREATOR PROFILE CARD
+                    # CREATOR CARD
                     with st.container(border=True):
                         st.subheader("👨‍💻 Creator Pedigree")
                         if creator_risk > 70:
                             st.error(f"High Risk Creator Profile ({creator_risk}%)")
                         elif creator_risk > 30:
-                            st.warning("New or Unknown Developer Wallet")
+                            st.warning(f"New or Unknown Developer Wallet")
                         else:
                             st.success("💎 Established Clean Reputation")
 
-                    # 5. DETAILED HOLDER TABLE
+                    # HOLDER TABLE
                     st.subheader("📊 Top 5 Holder Breakdown")
                     holders = data.get('topHolders', [])
                     if holders:
@@ -171,9 +171,8 @@ if st.button("Run Security Audit", type="primary"):
                     else:
                         st.info("No public holder data available for this contract.")
 
-                    # --- BEAUTIFUL LAYOUT END ---
+                    # --- RESTORED FINDINGS & SEAL ---
 
-                    # RISK DETAIL EXPANDER (Retained Findings)
                     issues = data.get('issues', [])
                     if issues:
                         st.subheader("🚩 Security Findings")
@@ -186,7 +185,6 @@ if st.button("Run Security Audit", type="primary"):
                         st.balloons()
                         st.success("SafeLaunch Verdict: No significant threats detected.")
 
-                    # SEAL OF APPROVAL
                     if verdict == "LOW RISK":
                         st.markdown("---")
                         st.subheader("🏆 SafeLaunch Seal of Approval")
