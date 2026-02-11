@@ -4,6 +4,7 @@ import os
 import json
 import random # For the probability weighting
 from dotenv import load_dotenv
+import pandas as pd # Needed for the new holder table
 
 # --- 1. PERSISTENCE & HISTORY LOGIC ---
 def get_persistent_data():
@@ -97,7 +98,6 @@ if st.button("Run Security Audit", type="primary"):
                     safety_score = max(0, 100 - int(raw_risk))
                     
                     # NEW FEATURE: Rug Probability Score Calculation
-                    # Weights: OverallRisk (50%), CreatorRisk (30%), IssuesCount (20%)
                     issues_count = len(data.get('issues', []))
                     creator_risk = data.get('creatorRisk', raw_risk)
                     rug_prob = min(100, (rounded_risk * 0.6) + (creator_risk * 0.2) + (issues_count * 5))
@@ -115,7 +115,7 @@ if st.button("Run Security Audit", type="primary"):
 
                     st.success(f"Audit Complete for {target_address[:10]}...")
                     
-                    # NEW VISUAL: Rug Probability Meter
+                    # VISUAL: Rug Probability Meter
                     st.markdown(f"## Rug Probability Score: {round(rug_prob, 1)}%")
                     prob_color = "red" if rug_prob > 70 else "orange" if rug_prob > 30 else "green"
                     st.progress(rug_prob / 100)
@@ -128,16 +128,15 @@ if st.button("Run Security Audit", type="primary"):
                     
                     st.markdown("---")
 
-                    # NEW FEATURE: Liquidity Lock Verifier (Real-time detection)
+                    # FEATURE: Liquidity Lock Verifier
                     st.subheader("🔒 Liquidity Lock Status")
-                    # Webacy doesn't always return a boolean, so we infer from issues/risk
                     has_liq_issue = any("liquidity" in str(iss).lower() for iss in data.get('issues', []))
                     if has_liq_issue or rounded_risk > 80:
                         st.error("🚨 UNLOCKED LIQUIDITY: Developer can remove funds at any time.")
                     else:
                         st.success("✅ LOCKED/BURNED: Initial liquidity appears stable.")
 
-                    # CREATOR PEDIGREE (Retained from your code)
+                    # CREATOR PEDIGREE
                     st.subheader("👨‍💻 Creator Pedigree: Wallet Reputation")
                     if creator_risk > 70:
                         st.error(f"🚨 HIGH RISK CREATOR: History of suspicious interactions (Risk: {creator_risk}%)")
@@ -146,14 +145,25 @@ if st.button("Run Security Audit", type="primary"):
                     else:
                         st.success(f"💎 ESTABLISHED CREATOR: Clean historical profile.")
 
-                    # NEW FEATURE: Insider/Whale Analysis (The Pedigree Trace)
+                    # FEATURE: Insider/Whale Analysis
                     st.subheader("🐋 Whale Analysis: Insider Detection")
                     if rug_prob > 60 or rounded_risk > 65:
                         st.error("🚨 INSIDER BUNDLING: High probability of 'Sniper Wallets' controlled by Dev.")
                     else:
                         st.success("💎 ORGANIC DISTRIBUTION: Holders appear to be unique retail wallets.")
 
-                    # RISK DETAIL EXPANDER (Retained)
+                    # NEW: Detailed Holder Table (TOP 5 HOLDERS)
+                    st.subheader("📊 Top Holder Breakdown")
+                    holders = data.get('topHolders', []) 
+                    if holders:
+                        df = pd.DataFrame(holders)
+                        # Display only top 5 for cleaner UI
+                        df_display = df.head(5)
+                        st.table(df_display)
+                    else:
+                        st.info("Detailed holder list not provided for this specific contract.")
+
+                    # RISK DETAIL EXPANDER
                     issues = data.get('issues', [])
                     if issues:
                         st.subheader("🚩 Security Findings")
@@ -166,7 +176,7 @@ if st.button("Run Security Audit", type="primary"):
                         st.balloons()
                         st.success("SafeLaunch Verdict: No significant threats detected.")
 
-                    # SEAL OF APPROVAL & SOCIAL (Retained)
+                    # SEAL OF APPROVAL
                     if verdict == "LOW RISK":
                         st.markdown("---")
                         st.subheader("🏆 SafeLaunch Seal of Approval")
