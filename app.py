@@ -115,23 +115,23 @@ if st.button("Run Security Audit", type="primary"):
 
                     st.success(f"Audit Complete for {target_address[:10]}...")
                     
-                    # --- BEAUTIFUL LAYOUT (Restored & Enhanced) ---
+                    # --- BEAUTIFUL LAYOUT ---
                     
-                    # TWEAK: Colored Progress Label based on risk
+                    # 1. RUG PROBABILITY (Dynamic Color)
                     prob_color = "red" if rug_prob > 70 else "orange" if rug_prob > 30 else "green"
                     st.markdown(f"## Rug Probability: :{prob_color}[{round(rug_prob, 1)}%]")
                     st.progress(rug_prob / 100)
                     
-                    # TWEAK: Smart Scorecard with verdict context
+                    # 2. SCORECARD METRICS
                     st.markdown(f"### Security Standing: :{color}[{icon} {verdict}]")
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Safety Grade", f"{safety_score}/100")
-                    c2.metric("Threat Level", f"{rounded_risk}%", delta=verdict, delta_color="inverse")
-                    c3.metric("Network", chain_display)
+                    col_m1, col_m2, col_m3 = st.columns(3)
+                    col_m1.metric("Safety Grade", f"{safety_score}/100")
+                    col_m2.metric("Threat Level", f"{rounded_risk}%", delta=verdict, delta_color="inverse")
+                    col_m3.metric("Network", chain_display)
 
                     st.markdown("---")
 
-                    # SIDE-BY-SIDE HEALTH CARDS
+                    # 3. TECHNICAL HEALTH CARDS (Side-by-Side)
                     row1_col1, row1_col2 = st.columns(2)
                     has_liq_issue = any("liquidity" in str(iss).lower() for iss in data.get('issues', []))
                     
@@ -153,17 +153,17 @@ if st.button("Run Security Audit", type="primary"):
                                 st.success("💎 ORGANIC")
                             st.caption("Distribution patterns.")
 
-                    # CREATOR CARD
+                    # 4. CREATOR PROFILE CARD
                     with st.container(border=True):
                         st.subheader("👨‍💻 Creator Pedigree")
                         if creator_risk > 70:
                             st.error(f"High Risk Creator Profile ({creator_risk}%)")
                         elif creator_risk > 30:
-                            st.warning(f"New or Unknown Developer Wallet")
+                            st.warning("New or Unknown Developer Wallet")
                         else:
                             st.success("💎 Established Clean Reputation")
 
-                    # HOLDER TABLE
+                    # 5. DETAILED HOLDER TABLE
                     st.subheader("📊 Top 5 Holder Breakdown")
                     holders = data.get('topHolders', [])
                     if holders:
@@ -171,8 +171,7 @@ if st.button("Run Security Audit", type="primary"):
                     else:
                         st.info("No public holder data available for this contract.")
 
-                    # --- RESTORED FINDINGS & SEAL ---
-
+                    # --- FINDINGS & SEAL ---
                     issues = data.get('issues', [])
                     if issues:
                         st.subheader("🚩 Security Findings")
