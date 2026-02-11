@@ -4,7 +4,7 @@ import os
 import json
 import random # For the probability weighting
 from dotenv import load_dotenv
-import pandas as pd # Needed for the new holder table
+import pandas as pd # Essential for the holder breakdown table
 
 # --- 1. PERSISTENCE & HISTORY LOGIC ---
 def get_persistent_data():
@@ -97,7 +97,7 @@ if st.button("Run Security Audit", type="primary"):
                     rounded_risk = round(raw_risk, 2)
                     safety_score = max(0, 100 - int(raw_risk))
                     
-                    # NEW FEATURE: Rug Probability Score Calculation
+                    # RUG PROBABILITY MATH (As requested, unchanged)
                     issues_count = len(data.get('issues', []))
                     creator_risk = data.get('creatorRisk', raw_risk)
                     rug_prob = min(100, (rounded_risk * 0.6) + (creator_risk * 0.2) + (issues_count * 5))
@@ -115,55 +115,65 @@ if st.button("Run Security Audit", type="primary"):
 
                     st.success(f"Audit Complete for {target_address[:10]}...")
                     
-                    # VISUAL: Rug Probability Meter
-                    st.markdown(f"## Rug Probability Score: {round(rug_prob, 1)}%")
-                    prob_color = "red" if rug_prob > 70 else "orange" if rug_prob > 30 else "green"
+                    # --- BEAUTIFUL LAYOUT START ---
+                    
+                    # 1. TOP LEVEL VERDICT
+                    st.markdown(f"## {icon} {verdict}")
+                    st.write(f"**Rug Probability Score: {round(rug_prob, 1)}%**")
                     st.progress(rug_prob / 100)
                     
-                    st.markdown(f"### Security Standing: :{color}[{verdict}]")
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Safety Grade", f"{safety_score}/100")
-                    c2.metric("Threat Level", f"{rounded_risk}%")
-                    c3.metric("Network", chain_display)
-                    
+                    # 2. SCORECARD METRICS
+                    col_m1, col_m2, col_m3 = st.columns(3)
+                    col_m1.metric("Safety Grade", f"{safety_score}/100")
+                    col_m2.metric("Threat Level", f"{rounded_risk}%")
+                    col_m3.metric("Network", chain_display)
+
                     st.markdown("---")
 
-                    # FEATURE: Liquidity Lock Verifier
-                    st.subheader("🔒 Liquidity Lock Status")
+                    # 3. TECHNICAL HEALTH CARDS (Side-by-Side)
+                    row1_col1, row1_col2 = st.columns(2)
+                    
                     has_liq_issue = any("liquidity" in str(iss).lower() for iss in data.get('issues', []))
-                    if has_liq_issue or rounded_risk > 80:
-                        st.error("🚨 UNLOCKED LIQUIDITY: Developer can remove funds at any time.")
-                    else:
-                        st.success("✅ LOCKED/BURNED: Initial liquidity appears stable.")
+                    
+                    with row1_col1:
+                        with st.container(border=True):
+                            st.subheader("🔒 Liquidity")
+                            if has_liq_issue or rounded_risk > 80:
+                                st.error("🚨 UNLOCKED")
+                            else:
+                                st.success("✅ STABLE")
+                            st.caption("LP Token status check.")
 
-                    # CREATOR PEDIGREE
-                    st.subheader("👨‍💻 Creator Pedigree: Wallet Reputation")
-                    if creator_risk > 70:
-                        st.error(f"🚨 HIGH RISK CREATOR: History of suspicious interactions (Risk: {creator_risk}%)")
-                    elif creator_risk > 30:
-                        st.warning(f"⚠️ UNKNOWN CREATOR: New or low-activity wallet. Exercise caution.")
-                    else:
-                        st.success(f"💎 ESTABLISHED CREATOR: Clean historical profile.")
+                    with row1_col2:
+                        with st.container(border=True):
+                            st.subheader("🐋 Whale Analysis")
+                            if rug_prob > 60 or rounded_risk > 65:
+                                st.error("🚨 INSIDERS")
+                            else:
+                                st.success("💎 ORGANIC")
+                            st.caption("Distribution patterns.")
 
-                    # FEATURE: Insider/Whale Analysis
-                    st.subheader("🐋 Whale Analysis: Insider Detection")
-                    if rug_prob > 60 or rounded_risk > 65:
-                        st.error("🚨 INSIDER BUNDLING: High probability of 'Sniper Wallets' controlled by Dev.")
-                    else:
-                        st.success("💎 ORGANIC DISTRIBUTION: Holders appear to be unique retail wallets.")
+                    # 4. CREATOR PROFILE CARD
+                    with st.container(border=True):
+                        st.subheader("👨‍💻 Creator Pedigree")
+                        if creator_risk > 70:
+                            st.error(f"High Risk Creator Profile ({creator_risk}%)")
+                        elif creator_risk > 30:
+                            st.warning("New or Unknown Developer Wallet")
+                        else:
+                            st.success("💎 Established Clean Reputation")
 
-                    # NEW: Detailed Holder Table (TOP 5 HOLDERS)
-                    st.subheader("📊 Top Holder Breakdown")
-                    holders = data.get('topHolders', []) 
+                    # 5. DETAILED HOLDER TABLE
+                    st.subheader("📊 Top 5 Holder Breakdown")
+                    holders = data.get('topHolders', [])
                     if holders:
-                        df = pd.DataFrame(holders)
-                        # Display only top 5 for cleaner UI
-                        df_display = df.head(5)
-                        st.table(df_display)
+                        st.dataframe(pd.DataFrame(holders).head(5), use_container_width=True)
                     else:
-                        st.info("Detailed holder list not provided for this specific contract.")
+                        st.info("No public holder data available for this contract.")
 
-                    # RISK DETAIL EXPANDER
+                    # --- BEAUTIFUL LAYOUT END ---
+
+                    # RISK DETAIL EXPANDER (Retained Findings)
                     issues = data.get('issues', [])
                     if issues:
                         st.subheader("🚩 Security Findings")
